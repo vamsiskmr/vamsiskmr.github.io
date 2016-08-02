@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+    	<style>
+	/*.bar {
+		display: inline-block;
+    	width: 10px;
+		margin-right:2px;
+		margin-top:2px;
+    	height: 75px;   
+    	background-color: teal;}
+	.axis {
+	top:100px;
+	left:350px;
+	position:relative;
+	}*/
+	#ascend,#descend{
+		margin-left:200px;
+		border-color:blue;
+		border-style:solid;
+	}
+
+    .bar {
+    pointer-events: none;
+    }
+
+    #h {
+     padding-top:20px;
+     padding-left:20px;
+     font-size:1.5em;
+     padding-bottom: 0px
+    }
+	</style>
+	</head>
+    <body>
+    
+    <p> <button id="ascend">Click here to sort the monthly dividend in ascending order </button></p>
+    <p> <button id="descend">Click here to sort the monthly dividend in descending order </button></p>
+
+<p id="h"> Hover over the bars to get the date(Month/Year) and the dividend for that month<p>
+
+    <script type="text/javascript">
+	
+	var dataset = [0.118, 0.141, 0.107, 0.144, 0.164, 0.031, 0.139, 0.151,0.106,0.221,0.204,0.091,0.103,0.184,0.192,0.152,0.146,0.088,0.228,0.160,0.107,0.165,0.107,0.165,0.217,0.116,0.152,0.185,0.133,0.160,0.182,0.091,0.124,0.151,0.073,0.154,0.180,0.039,0.126,0.190,0.132,0.143,0.197,0.343,0.178,0.183,0.040,0.021,0.166]
+
+	var labels = ["06/2012", "07/2012", "08/2012", "09/2012", "10/2012", "11/2012", "12/2012", "01/2013","02/2013","03/2013","04/2013","05/2013","06/2013","07/2013","08/2013","09/2013","10/2013","11/2013","12/2013","01/2014","02/2014","03/2014","04/2014","05/2014","06/2014","07/2014","08/2014","09/2014","10/2014","11/2014","12/2014","01/2015","02/2015","03/2015","04/2015","05/2015","06/2015","07/2015","08/2015","09/2015","10/2015","11/2015","12/2015","01/2016","02/2016","03/2016","04/2016","05/2016","06/2016"];
+	
+    var new_dataset = [];
+    var key = {};
+    var val = {};
+    for (i=0;i<dataset.length;i++)
+    {
+        new_dataset.push({key:labels[i],val:dataset[i]})
+        key_s={}
+        val_s={}
+    };
+
+
+	var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    	width = 600 - margin.left - margin.right,
+    	height = 270 - margin.top - margin.bottom;
+
+    var w_svg= dataset.length*30;
+    var h_svg= 300; 
+	var svg = d3.select("body")
+	            .append("svg")
+            	.style("padding",100)
+            	.attr("width", w_svg)
+            	.attr("height", h_svg);
+
+	svg.selectAll("rect")
+	.data(new_dataset)
+	.enter()
+
+	.append("rect")
+	.style("padding",function(d,i){return 0})
+	.attr("x",function (d,i) {return i*21})
+	.attr("y",function(d,i){return h_svg-d.val*500})
+	.attr("width",20)
+	.attr("height",function(d){return d.val*500})
+	.attr("fill",function(d){return "rgb(0,0,"+d.val*1000+")"})
+	.on("mouseover", function(d) {
+        d3.select(this)
+          .attr("fill", "orange")})
+	.on("mouseout", function(d) {
+        d3.select(this)
+          .attr("fill", "rgb(0,0,"+d.val*1000+")")})	
+         .append("title")
+     .text(function(d){return d.key+" "+d.val})
+	.attr("class", "bar");
+
+    d3.select("#ascend")
+    .on("click",function(d){
+        sortBars_ascend()});
+    
+    d3.select("#descend")
+    .on("click",function(d){
+        sortBars_descend()});
+
+	var xscale = d3.scale.linear()
+                    .domain([1, dataset.length*22])
+                    .range([1, dataset.length*22]);
+
+    	var yscale = d3.scale.linear()
+                    .domain([0,d3.max(dataset)])
+                    .range([d3.max(dataset)*500,0]);
+
+   var xAxis = d3.svg.axis()
+   				.scale(xscale)
+                  .orient("bottom");
+
+     var yAxis = d3.svg.axis()
+     			.scale(yscale)
+     			.orient("left");  
+
+     svg.append("g")
+     .attr("class","yaxis")
+     .attr("transform","translate(10,125)")
+     .call(yAxis);
+
+     svg.select("g.yaxis")
+     .append("text")
+     .attr("transform","rotate(-90)")
+     .attr("x",40-h_svg)
+     .attr("y",-50)
+     .text("Dividend yield of GYLD from June 2012 to June 2016")
+     .attr("color","blue");
+
+svg.select("#ascend")
+
+var sortOrder = false;
+
+var sortBars_ascend = function() {
+        //Flip value of sortOrder
+        sortOrder = !sortOrder;
+  		svg.selectAll("rect")
+           .sort(function(a, b) {
+                        if (true) {
+                                return d3.ascending(a.val, b.val);
+                        } else {
+                                return d3.descending(a.val, b.val);
+                        }
+                })
+           .transition()
+           .delay(function(d,i){return i*50})
+           .duration(1000)
+           .attr("x",function(d,i){return i*21})
+};
+
+var sortBars_descend = function() {
+        //Flip value of sortOrder
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                        if (false) {
+                                return d3.ascending(a.val, b.val);
+                        } else {
+                                return d3.descending(a.val, b.val);
+                        }
+                })
+           .transition()
+           .delay(function(d,i){return i*50})
+           .duration(1000)
+           .attr("x",function(d,i){return i*21})
+};
+	
+	</script>
+    </body>
+</html>
